@@ -4,8 +4,8 @@
 
 /**
  * Calculates warranty expiry date based on purchase date, duration, and unit.
- * @param {Date|string} purchaseDate 
- * @param {number} duration 
+ * @param {Date|string} purchaseDate
+ * @param {number} duration
  * @param {string} unit - 'Months' or 'Years'
  * @returns {Date}
  */
@@ -13,20 +13,47 @@ export const calculateExpiryDate = (purchaseDate, duration, unit) => {
   const date = new Date(purchaseDate);
   const numDuration = Number(duration) || 0;
 
-  if (unit === 'Years') {
-    date.setFullYear(date.getFullYear() + numDuration);
-  } else {
-    // Default to Months
-    date.setMonth(date.getMonth() + numDuration);
+  if (unit === 'Days') {
+    // Preserve UTC to avoid timezone off-by-one errors.
+    date.setUTCDate(date.getUTCDate() + numDuration);
+    return date;
   }
 
-  return date;
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const seconds = date.getUTCSeconds();
+  const milliseconds = date.getUTCMilliseconds();
+
+  let totalMonths = year * 12 + month;
+  if (unit === 'Years') {
+    totalMonths += numDuration * 12;
+  } else {
+    // Default to Months (calendar-aware, clamps month-end dates safely).
+    totalMonths += numDuration;
+  }
+
+  const newYear = Math.floor(totalMonths / 12);
+  const newMonth = ((totalMonths % 12) + 12) % 12;
+
+  // Clamp the day to the last valid day of the target month (handles
+  // month-end dates and February in leap/non-leap years).
+  const lastDayOfTargetMonth = new Date(
+    Date.UTC(newYear, newMonth + 1, 0)
+  ).getUTCDate();
+  const clampedDay = Math.min(day, lastDayOfTargetMonth);
+
+  return new Date(
+    Date.UTC(newYear, newMonth, clampedDay, hours, minutes, seconds, milliseconds)
+  );
 };
 
 /**
  * Calculates days remaining until warranty expiry date.
  * Uses normalized midnight dates to ensure precise day count calculation.
- * @param {Date|string} expiryDate 
+ * @param {Date|string} expiryDate
  * @returns {number} Integer representing remaining days (negative if expired)
  */
 export const calculateDaysRemaining = (expiryDate) => {
@@ -48,7 +75,7 @@ export const calculateDaysRemaining = (expiryDate) => {
  * - ACTIVE: > 30 days remaining
  * - EXPIRING_SOON: 0 to 30 days remaining
  * - EXPIRED: < 0 days remaining
- * @param {number} daysRemaining 
+ * @param {number} daysRemaining
  * @returns {'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED'}
  */
 export const getWarrantyStatus = (daysRemaining) => {
@@ -68,7 +95,7 @@ export const getWarrantyStatus = (daysRemaining) => {
  * - "12 days left"
  * - "Expires today"
  * - "Expired 18 days ago"
- * @param {number} daysRemaining 
+ * @param {number} daysRemaining
  * @returns {string}
  */
 export const formatDaysRemainingText = (daysRemaining) => {
@@ -87,7 +114,7 @@ export const formatDaysRemainingText = (daysRemaining) => {
 /**
  * Decorates a raw warranty database object with computed runtime fields:
  * daysRemaining, status, formattedDaysLeft
- * @param {Object} warrantyDoc 
+ * @param {Object} warrantyDoc
  * @returns {Object}
  */
 export const decorateWarranty = (warrantyDoc) => {

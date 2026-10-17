@@ -1,44 +1,44 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
-const ConfirmModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title = "Are you sure you want to delete this warranty?", 
+const ConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = "Are you sure you want to delete this warranty?",
   message = "This action cannot be undone. All documents and images associated with this product will be permanently removed.",
   confirmText = "Delete Warranty",
-  isLoading = false 
+  isLoading = false
 }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs animate-fadeIn">
+      <div className="relative w-full max-w-md bg-white dark:bg-dark-850 rounded-2xl shadow-xl border border-slate-200 dark:border-dark-750 overflow-hidden">
         {/* Header */}
         <div className="p-5 flex items-start space-x-4">
-          <div className="w-11 h-11 rounded-full bg-rose-100 flex items-center justify-center shrink-0 text-rose-600">
+          <div className="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center shrink-0 text-rose-600 dark:text-rose-400">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-            <p className="mt-1 text-sm text-slate-600 leading-relaxed">{message}</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{message}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Actions */}
-        <div className="bg-slate-50 px-5 py-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+        <div className="bg-slate-50 dark:bg-dark-900 px-5 py-4 border-t border-slate-100 dark:border-dark-800 flex items-center justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-dark-800 border border-slate-300 dark:border-dark-700 rounded-xl hover:bg-slate-100 dark:hover:bg-dark-700 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -46,7 +46,7 @@ const ConfirmModal = ({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className="inline-flex items-center justify-center space-x-2 px-4 py-2 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700 active:bg-rose-800 shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center space-x-2 px-4 py-2 text-sm font-semibold text-white bg-rose-600 dark:bg-rose-600 rounded-xl hover:bg-rose-700 dark:hover:bg-rose-500 active:bg-rose-800 shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? (
               <>

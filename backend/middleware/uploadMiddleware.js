@@ -51,3 +51,24 @@ export const warrantyUpload = upload.fields([
   { name: 'productImage', maxCount: 1 },
   { name: 'invoiceFile', maxCount: 1 }
 ]);
+
+// Avatar image filter (JPG, PNG, WEBP only, max 2MB)
+const avatarFileFilter = (req, file, cb) => {
+  const allowedExtensions = /jpeg|jpg|png|webp/;
+  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+  const extname = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedMimeTypes.includes(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Invalid image type. Only JPG, PNG, and WEBP images are allowed for avatars!'), false);
+  }
+};
+
+export const avatarUpload = multer({
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+  fileFilter: avatarFileFilter
+}).single('avatar');

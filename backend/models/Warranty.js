@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 
 const warrantySchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Warranty must belong to a user'],
+      index: true
+    },
     productName: {
       type: String,
       required: [true, 'Product name is required'],
@@ -30,7 +36,7 @@ const warrantySchema = new mongoose.Schema(
     warrantyUnit: {
       type: String,
       required: [true, 'Warranty unit is required'],
-      enum: ['Months', 'Years'],
+      enum: ['Days', 'Months', 'Years'],
       default: 'Months'
     },
     warrantyExpiryDate: {
@@ -71,8 +77,10 @@ const warrantySchema = new mongoose.Schema(
   }
 );
 
-// Add index on product name and brand for search performance
+// Compound text index on product name, brand, store
 warrantySchema.index({ productName: 'text', brand: 'text', store: 'text' });
+// Compound index on user and expiry date for fast scoped queries and notifications
+warrantySchema.index({ user: 1, warrantyExpiryDate: 1 });
 
 const Warranty = mongoose.model('Warranty', warrantySchema);
 

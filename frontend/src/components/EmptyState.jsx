@@ -11,12 +11,12 @@ const EmptyState = ({
   onActionClick
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 sm:p-12 text-center flex flex-col items-center justify-center max-w-lg mx-auto">
-      <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 shadow-xs">
+    <div className="bg-white dark:bg-dark-850 rounded-2xl border border-dashed border-slate-300 dark:border-dark-700 p-8 sm:p-12 text-center flex flex-col items-center justify-center max-w-lg mx-auto transition-colors">
+      <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 shadow-xs">
         <Icon className="w-8 h-8 stroke-[1.5]" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-1">{title}</h3>
-      <p className="text-slate-500 text-sm max-w-sm mb-6 leading-relaxed">
+      <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">{title}</h3>
+      <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-6 leading-relaxed">
         {description}
       </p>
 
@@ -24,7 +24,7 @@ const EmptyState = ({
         actionLink ? (
           <Link
             to={actionLink}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{actionText}</span>
@@ -32,7 +32,7 @@ const EmptyState = ({
         ) : (
           <button
             onClick={onActionClick}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{actionText}</span>

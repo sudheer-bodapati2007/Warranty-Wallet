@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Package, 
-  ShieldAlert, 
-  ShieldCheck, 
-  AlertCircle, 
-  PlusCircle, 
-  ArrowRight, 
+import {
+  Package,
+  ShieldAlert,
+  ShieldCheck,
+  AlertCircle,
+  PlusCircle,
+  ArrowRight,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  FolderKanban
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { fetchWarrantyStats } from '../services/api';
 import WarrantyCard from '../components/WarrantyCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,12 +44,12 @@ const Dashboard = () => {
     loadDashboardData();
   }, []);
 
-  // Time-based greeting helper
+    // Time-based greeting helper with authenticated user name
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning 👋';
-    if (hour < 18) return 'Good afternoon 👋';
-    return 'Good evening 👋';
+    const base = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    const displayName = (user && user.name && String(user.name).trim()) || "there";
+    return `${base}, ${displayName} 👋`;
   };
 
   if (loading) {
@@ -56,10 +59,10 @@ const Dashboard = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-        <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl max-w-lg mx-auto">
-          <AlertCircle className="w-10 h-10 text-rose-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-rose-900 mb-1">Connection Error</h3>
-          <p className="text-sm text-rose-700 mb-4">{error}</p>
+        <div className="p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl max-w-lg mx-auto">
+          <AlertCircle className="w-10 h-10 text-rose-600 dark:text-rose-400 mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-rose-900 dark:text-rose-200 mb-1">Connection Error</h3>
+          <p className="text-sm text-rose-700 dark:text-rose-300 mb-4">{error}</p>
           <button
             onClick={loadDashboardData}
             className="inline-flex items-center space-x-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700 transition-colors"
@@ -75,19 +78,26 @@ const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-dark-850 p-6 sm:p-8 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 shadow-xs transition-colors">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {getGreeting()}
           </h1>
-          <p className="text-slate-600 mt-1 text-sm sm:text-base max-w-2xl">
-            Keep track of your products and never miss a warranty expiry.
+          <p className="text-slate-600 dark:text-slate-400 mt-1 text-sm sm:text-base max-w-2xl">
+            Keep track of your products, receipts, and never miss a warranty expiry date.
           </p>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-3">
+          <Link
+            to="/warranties"
+            className="inline-flex items-center space-x-2 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-dark-800 hover:bg-slate-200 dark:hover:bg-dark-700 rounded-xl transition-all"
+          >
+            <FolderKanban className="w-4 h-4" />
+            <span>All Warranties</span>
+          </Link>
           <Link
             to="/add"
-            className="inline-flex items-center space-x-2 px-5 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
+            className="inline-flex items-center space-x-2 px-5 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-sm shadow-blue-600/20 transition-all focus:outline-none"
           >
             <PlusCircle className="w-5 h-5" />
             <span>Add Warranty</span>
@@ -98,74 +108,74 @@ const Dashboard = () => {
       {/* Statistics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Total Products */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-white dark:bg-dark-850 p-5 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 shadow-xs hover:border-slate-300 dark:hover:border-dark-600 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Total Products
             </span>
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-dark-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
               <Package className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-slate-900">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
               {stats?.total || 0}
             </span>
-            <span className="text-xs text-slate-500 font-medium">All items</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">All items</span>
           </div>
         </div>
 
         {/* Active Warranties */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-white dark:bg-dark-850 p-5 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 shadow-xs hover:border-slate-300 dark:hover:border-dark-600 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Active Warranties
             </span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-slate-900">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
               {stats?.active || 0}
             </span>
-            <span className="text-xs text-emerald-600 font-medium font-mono">&gt; 30 days left</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium font-mono">&gt; 30 days left</span>
           </div>
         </div>
 
         {/* Expiring Soon */}
-        <div className="bg-white p-5 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/20 to-white shadow-xs hover:border-amber-300 transition-all">
+        <div className="bg-white dark:bg-dark-850 p-5 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 bg-gradient-to-br from-amber-50/30 to-white dark:from-amber-950/20 dark:to-dark-850 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">
+            <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
               Expiring Soon
             </span>
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-700 dark:text-amber-400">
               <ShieldAlert className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-amber-700">
+            <span className="text-3xl font-extrabold text-amber-700 dark:text-amber-400">
               {stats?.expiringSoon || 0}
             </span>
-            <span className="text-xs text-amber-700 font-medium font-mono">&le; 30 days left</span>
+            <span className="text-xs text-amber-700 dark:text-amber-400 font-medium font-mono">&le; 30 days left</span>
           </div>
         </div>
 
         {/* Expired */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-white dark:bg-dark-850 p-5 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 shadow-xs hover:border-slate-300 dark:hover:border-dark-600 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-rose-600">
+            <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
               Expired
             </span>
-            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center text-rose-600 dark:text-rose-400">
               <AlertCircle className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-slate-900">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
               {stats?.expired || 0}
             </span>
-            <span className="text-xs text-rose-600 font-medium">Warranty ended</span>
+            <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Warranty ended</span>
           </div>
         </div>
       </div>
@@ -175,15 +185,15 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-            <h2 className="text-xl font-bold text-slate-900">Expiring Soon</h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Expiring Soon</h2>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
               Action Needed
             </span>
           </div>
           {stats?.expiringSoonItems?.length > 0 && (
             <Link
               to="/warranties?status=EXPIRING_SOON"
-              className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center space-x-1"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center space-x-1"
             >
               <span>View All</span>
               <ArrowRight className="w-4 h-4" />
@@ -198,14 +208,14 @@ const Dashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-8 text-center flex flex-col items-center justify-center">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+          <div className="bg-white dark:bg-dark-850 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 p-8 text-center flex flex-col items-center justify-center transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
               <Sparkles className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
               You're all caught up 🎉
             </h3>
-            <p className="text-sm text-slate-500 max-w-md">
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
               No products are expiring within the next 30 days. All your active warranties are in safe status!
             </p>
           </div>
@@ -214,12 +224,12 @@ const Dashboard = () => {
 
       {/* Recent Products Section */}
       {stats?.recentItems?.length > 0 && (
-        <section className="space-y-4 pt-4 border-t border-slate-200/60">
+        <section className="space-y-4 pt-4 border-t border-slate-200/60 dark:border-dark-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">Recently Added</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recently Added</h2>
             <Link
               to="/warranties"
-              className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center space-x-1"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center space-x-1"
             >
               <span>View All Warranties</span>
               <ArrowRight className="w-4 h-4" />

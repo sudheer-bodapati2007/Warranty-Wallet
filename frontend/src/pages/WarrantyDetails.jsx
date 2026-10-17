@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Edit3, 
-  Trash2, 
-  Calendar, 
-  Clock, 
-  Store, 
-  DollarSign, 
-  Hash, 
-  FileText, 
-  ExternalLink, 
-  Package, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Edit3,
+  Trash2,
+  Calendar,
+  Clock,
+  Store,
+  DollarSign,
+  Hash,
+  FileText,
+  ExternalLink,
+  Package,
   AlertCircle,
   FileCheck,
-  Tag
+  Tag,
+  Download
 } from 'lucide-react';
-import { fetchWarrantyById, deleteWarranty, getFileUrl } from '../services/api';
+import { fetchWarrantyById, deleteWarranty, getFileUrl, fetchInvoiceUrl } from '../services/api';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -73,20 +73,40 @@ const WarrantyDetails = () => {
     }
   };
 
+  const [openingInvoice, setOpeningInvoice] = useState(false);
+
+  const handleViewInvoice = async () => {
+    if (!warranty?.invoiceFile) return;
+    try {
+      setOpeningInvoice(true);
+      const res = await fetchInvoiceUrl(id);
+      if (res.success && res.url) {
+        window.open(res.url, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open(getFileUrl(warranty.invoiceFile), '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      console.error('Invoice URL fetch error:', err);
+      window.open(getFileUrl(warranty.invoiceFile), '_blank', 'noopener,noreferrer');
+    } finally {
+      setOpeningInvoice(false);
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner label="Loading product warranty details..." />;
   }
 
   if (error || !warranty) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl max-w-lg mx-auto">
-          <AlertCircle className="w-10 h-10 text-rose-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-rose-900 mb-1">Product Not Found</h3>
-          <p className="text-sm text-rose-700 mb-4">{error}</p>
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center animate-fadeIn">
+        <div className="p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl max-w-lg mx-auto">
+          <AlertCircle className="w-10 h-10 text-rose-600 dark:text-rose-400 mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-rose-900 dark:text-rose-200 mb-1">Product Not Found</h3>
+          <p className="text-sm text-rose-700 dark:text-rose-300 mb-4">{error}</p>
           <Link
             to="/warranties"
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Warranties</span>
@@ -121,7 +141,7 @@ const WarrantyDetails = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/warranties"
-          className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Warranties</span>
@@ -131,14 +151,14 @@ const WarrantyDetails = () => {
         <div className="flex items-center space-x-3">
           <Link
             to={`/warranties/${_id}/edit`}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-dark-800 border border-slate-300 dark:border-dark-700 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-750 transition-colors shadow-xs"
           >
-            <Edit3 className="w-4 h-4 text-slate-500" />
+            <Edit3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             <span>Edit</span>
           </Link>
           <button
             onClick={() => setDeleteModalOpen(true)}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 text-sm font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
             <span>Delete</span>
@@ -147,11 +167,11 @@ const WarrantyDetails = () => {
       </div>
 
       {/* Main Details Card Container */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-dark-850 rounded-2xl border border-slate-200/90 dark:border-dark-750/80 shadow-xs overflow-hidden transition-colors">
         {/* Banner Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200 dark:border-dark-750">
           {/* Image */}
-          <div className="md:col-span-1 bg-slate-100 min-h-[260px] relative flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
+          <div className="md:col-span-1 bg-slate-100 dark:bg-dark-800 min-h-[260px] relative flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-dark-750">
             {productImage ? (
               <img
                 src={getFileUrl(productImage)}
@@ -160,17 +180,19 @@ const WarrantyDetails = () => {
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+                  if (e.target.nextSibling) {
+                    e.target.nextSibling.style.display = 'flex';
+                  }
                 }}
               />
             ) : null}
             <div
-              className={`w-full h-full flex flex-col items-center justify-center p-6 text-slate-400 bg-gradient-to-br from-slate-100 to-slate-200/60 ${
+              className={`w-full h-full flex flex-col items-center justify-center p-6 text-slate-400 dark:text-slate-600 bg-gradient-to-br from-slate-100 to-slate-200/60 dark:from-dark-800 dark:to-dark-900 ${
                 productImage ? 'hidden' : 'flex'
               }`}
             >
               <Package className="w-16 h-16 stroke-[1.5] mb-2" />
-              <span className="text-xs font-medium text-slate-500">No Image Uploaded</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">No Image Uploaded</span>
             </div>
           </div>
 
@@ -178,7 +200,7 @@ const WarrantyDetails = () => {
           <div className="md:col-span-2 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-dark-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1 border border-slate-200/60 dark:border-dark-700">
                   <Tag className="w-3.5 h-3.5 text-slate-400" />
                   {category}
                 </span>
@@ -186,27 +208,27 @@ const WarrantyDetails = () => {
               </div>
 
               {brand && (
-                <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest">
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                   {brand}
                 </p>
               )}
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
                 {productName}
               </h1>
             </div>
 
             {/* Status Highlight Banner */}
-            <div className="p-4 rounded-xl border bg-slate-50 border-slate-200/80 flex items-center justify-between">
+            <div className="p-4 rounded-xl border bg-slate-50 dark:bg-dark-900 border-slate-200/80 dark:border-dark-750 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Clock className="w-5 h-5 text-blue-600 shrink-0" />
+                <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
                 <div>
-                  <p className="text-xs font-semibold uppercase text-slate-500">Warranty Expiry</p>
-                  <p className="text-sm font-bold text-slate-900">{formatDate(warrantyExpiryDate)}</p>
+                  <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Warranty Expiry</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatDate(warrantyExpiryDate)}</p>
                 </div>
               </div>
               <div className="text-right">
-                <span className="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">
+                <span className="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900/40">
                   {formattedDaysLeft}
                 </span>
               </div>
@@ -218,50 +240,50 @@ const WarrantyDetails = () => {
         <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: Purchase & Warranty Details */}
           <div className="space-y-6">
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-dark-800 pb-2">
               Purchase Information
             </h2>
 
             <div className="space-y-4 text-sm">
               <div className="flex items-start space-x-3">
-                <Calendar className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                <Calendar className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Purchase Date</p>
-                  <p className="font-semibold text-slate-800">{formatDate(purchaseDate)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Purchase Date</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{formatDate(purchaseDate)}</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                <Clock className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Warranty Duration</p>
-                  <p className="font-semibold text-slate-800">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Warranty Duration</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
                     {warrantyDuration} {warrantyUnit}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <Store className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                <Store className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Store / Vendor</p>
-                  <p className="font-semibold text-slate-800">{store || '—'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Store / Vendor</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{store || '—'}</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <DollarSign className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                <DollarSign className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Price Paid</p>
-                  <p className="font-semibold text-slate-800">{formatCurrency(price)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Price Paid</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(price)}</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <Hash className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                <Hash className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Serial Number</p>
-                  <p className="font-mono text-slate-800 font-medium">{serialNumber || '—'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Serial Number</p>
+                  <p className="font-mono text-slate-800 dark:text-slate-200 font-medium">{serialNumber || '—'}</p>
                 </div>
               </div>
             </div>
@@ -269,30 +291,35 @@ const WarrantyDetails = () => {
 
           {/* Right Column: Documents & Notes */}
           <div className="space-y-6">
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-dark-800 pb-2">
               Documents & Notes
             </h2>
 
             {/* Document attachments */}
             <div className="space-y-3">
-              <p className="text-xs text-slate-500 font-medium">Attached Invoice / Receipt</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Attached Invoice / Receipt</p>
               {invoiceFile ? (
-                <a
-                  href={getFileUrl(invoiceFile)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/60 hover:border-blue-300 transition-all group"
+                <button
+                  type="button"
+                  onClick={handleViewInvoice}
+                  disabled={openingInvoice}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-750 bg-slate-50 dark:bg-dark-900 hover:bg-blue-50/60 dark:hover:bg-dark-800 hover:border-blue-300 dark:hover:border-blue-600 transition-all group text-left focus:outline-none"
                 >
                   <div className="flex items-center space-x-3 overflow-hidden">
-                    <FileCheck className="w-6 h-6 text-blue-600 shrink-0" />
-                    <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 truncate">
-                      View Attached Invoice Document
-                    </span>
+                    <FileCheck className="w-6 h-6 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <div>
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 block truncate">
+                        {openingInvoice ? 'Generating Secure Link...' : 'View Attached Invoice Document'}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block">
+                        Authorized private document access
+                      </span>
+                    </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
-                </a>
+                  <ExternalLink className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 shrink-0" />
+                </button>
               ) : (
-                <div className="p-4 rounded-xl border border-dashed border-slate-200 text-slate-400 text-xs font-medium flex items-center space-x-2">
+                <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-dark-750 text-slate-400 dark:text-slate-500 text-xs font-medium flex items-center space-x-2">
                   <FileText className="w-4 h-4" />
                   <span>No invoice document uploaded</span>
                 </div>
@@ -301,13 +328,13 @@ const WarrantyDetails = () => {
 
             {/* Notes */}
             <div className="space-y-2 pt-2">
-              <p className="text-xs text-slate-500 font-medium">Notes & Instructions</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Notes & Instructions</p>
               {notes ? (
-                <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200 leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-dark-900 p-4 rounded-xl border border-slate-200 dark:border-dark-750 leading-relaxed whitespace-pre-line">
                   {notes}
                 </p>
               ) : (
-                <p className="text-xs text-slate-400 italic">No notes provided.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No notes provided.</p>
               )}
             </div>
           </div>
